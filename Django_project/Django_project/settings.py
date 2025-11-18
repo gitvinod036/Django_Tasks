@@ -144,3 +144,12 @@ CLOUDINARY_STORAGE = {
     'API_KEY': env('CLOUDINARY_API_KEY'),
     'API_SECRET': env('CLOUDINARY_API_SECRET'),
 }
+
+
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER="vinodpersonal080@gmail.com"
+EMAIL_HOST_PASSWORD="nnlj ovkv razr gele"
+DEFAULT_FROM_EMAIL=EMAIL_HOST_USER
