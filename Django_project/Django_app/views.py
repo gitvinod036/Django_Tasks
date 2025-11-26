@@ -9,6 +9,7 @@ import bcrypt
 import jwt,datetime
 from django.conf import settings
 from django.core.mail import send_mail,EmailMessage
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 def Welcome(req):
@@ -44,39 +45,43 @@ Feel free to explore and enjoy all the features we’ve built for you.''',recipi
     else:
         return HttpResponse("Invalid method")
 
-
+@csrf_exempt
 def login(req):
    user_data=json.loads(req.body)
-   check_user=UserDetails.objects.get(username=user_data["name"])   
+   try:
+    check_user = UserDetails.objects.get(username=user_data["name"])
+   except ObjectDoesNotExist:
+    return HttpResponse("User does not exist", status=400)
+   # check_user=UserDetails.objects.get(username=user_data["name"])   
    serialized=UserDetails_Serializers(check_user)
-  #  print(user_data,serialized.data)
+   print(user_data,serialized.data)
    
    encrypted_password=serialized.data["password"]
    user_password=user_data["password"]
    is_true=bcrypt.checkpw(user_password.encode("utf-8"),encrypted_password.encode("utf-8"))   
-   
+   print(is_true)
    if is_true==False:
       return HttpResponse("Invalid Cerdentials Try Again")
-   
-   user_payload={
+   else:
+    user_payload={
       "name":serialized.data["username"],
       "email":serialized.data["email"],
       "iat":datetime.datetime.now(),
       "exp":datetime.datetime.now()+datetime.timedelta(seconds=360)
-   }
+    }
 
-   token=jwt.encode(payload=user_payload,key="django-insecure-&kvlv)8m=p=qc+82l^kvd-89uz(z=8_2wrdliq%-q&c(j#uybu",algorithm="HS256")
-   print(token)
+    token=jwt.encode(payload=user_payload,key="django-insecure-&kvlv)8m=p=qc+82l^kvd-89uz(z=8_2wrdliq%-q&c(j#uybu",algorithm="HS256")
+    print(token)
    
 
-   res=HttpResponse("Cookie is set")
+    res=HttpResponse("Cookie is set and successfully registered")
    
-   res.set_cookie(
+    res.set_cookie(
       key="my_cookie",
       value=token,
       httponly=True,
       max_age=1800
-   )
+    )
    return res
 
 
@@ -128,15 +133,15 @@ def delete(req,id):
    
 
 
-
+@csrf_exempt 
 def send_file(req):
    user_email=req.POST.get("email")
    pic=req.FILES.get("file")
 
    email=EmailMessage(subject="Sending Email",
-                      body="this is file",
+                      body="Welcome To ",
                       from_email=settings.EMAIL_HOST_USER,
                       to=[user_email])
-   email.attach_file("C:\\Users\\S VINAY KUMAR\\Pictures\\c4d284f510339cb224916769038bb715.jpg")
+   email.attach_file("C://Users//S VINAY KUMAR//Pictures//img2.jpg")
    email.send()
    return HttpResponse("Message Send Successfully")

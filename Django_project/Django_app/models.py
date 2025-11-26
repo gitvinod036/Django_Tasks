@@ -8,3 +8,6 @@ class UserDetails(models.Model):
     email=models.EmailField(max_length=100,default="User@gmail.com")
     mobile=models.CharField(max_length=15)
     profile=models.URLField(default="empty")
+
+
+    
