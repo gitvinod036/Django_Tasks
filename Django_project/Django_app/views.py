@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import cloudinary
-from .models import UserDetails
+from Django_app.models import DjangoAppUserdetails,Employee
 from .serializer import UserDetails_Serializers
 import json
 import bcrypt
@@ -10,10 +10,42 @@ import jwt,datetime
 from django.conf import settings
 from django.core.mail import send_mail,EmailMessage
 from django.core.exceptions import ObjectDoesNotExist
-# Create your views here.
+from django.db.models import Max,Min,Avg,Sum,Count
 
-def Welcome(req):
-    return HttpResponse("Welcome")
+#CBV
+# from django.view import View
+from django.views.generic import View,ListView,DetailView,DeleteView,CreateView,UpdateView
+from django.urls import reverse_lazy
+from .forms.emp_form import EmpForm
+# from ..forms.emp_form import EmpForm
+
+
+from django.core.paginator import Paginator
+
+
+# Create your views here.
+from .helpers import Another_decorator,sample_decorator
+
+
+# @sample_decorator
+def welcome(req):
+   res=HttpResponse("Welcome to Django App")
+   res.set_cookie(
+      key='first_cookie',
+      value='Sample_cookie',
+      max_age=60
+   )
+   return res
+   print("from view")
+   return HttpResponse("Welcome")
+
+
+
+
+# @Another_decorator
+# def sample(req):
+#    print(req.COOKIES.get("first_cookie"), "From View")
+#    return JsonResponse({"msg":"Welcome app"})
 
 @csrf_exempt
 def register(req):
@@ -77,13 +109,12 @@ def login(req):
     res=HttpResponse("Cookie is set and successfully registered")
    
     res.set_cookie(
-      key="my_cookie",
+      key="first_cookie",
       value=token,
       httponly=True,
       max_age=1800
     )
    return res
-
 
 
 def get_user(req,id=None):
@@ -145,3 +176,135 @@ def send_file(req):
    email.attach_file("C://Users//S VINAY KUMAR//Pictures//img2.jpg")
    email.send()
    return HttpResponse("Message Send Successfully")
+
+
+def is_valid_user(request):
+   try:
+      cookie_token=request.COOKIES.get("first_cookie")
+      if not cookie_token:
+         return False
+      data=jwt.decode(jwt=cookie_token,key='django-insecure-&kvlv)8m=p=qc+82l^kvd-89uz(z=8_2wrdliq%-q&c(j#uybu',algorithms=["HS256"])
+      return data    #return Decoded
+   except Exception:
+      return False
+   
+
+
+
+
+#TEmplates
+
+
+
+
+@csrf_exempt
+def start(request):
+   name=request.POST.get("name")
+   Email=request.POST.get("email")
+   mobile=request.POST.get("mobile")
+   age=request.POST.get("age")
+   return render(request,"./basic.html", context={"value":name,"email":Email,"mobile":mobile,"age":age})
+
+
+def show(req):
+ return render(req,"./sample2.html")
+    
+
+def loops(req):
+   names=["manoj","arvind","johhny","vinod","raju","dharma","surya","bala","Iphone"]
+   return render(req,"./sample4.html" ,context={"names":names})
+
+
+
+#ORM with Imported table
+def emp_table(req):
+   data=Employee.objects.all()
+   # return HttpResponse(data)
+   # data=list(data)
+   for emp in data:
+      print(emp.salary)
+      # return HttpResponse(emp.name,emp.salary)
+   count_emp=data.aggregate(Count('name'))
+   max_salary=data.aggregate(Max('salary'))
+   min_salary=data.aggregate(Min("salary"))
+   avg_salary=data.aggregate(Avg('salary'))
+
+   # return JsonResponse({"max":max_salary})
+   return JsonResponse({"max":count_emp})
+
+
+#Sql Injection :
+
+
+#CBV
+
+#BASIC VIEW
+class Sample(View):
+   def get(self,req):
+      return HttpResponse("Sample View")
+   
+
+#LIST VIEW --from Generic 
+class EmployeeList(ListView):
+   model=Employee
+   context_object_name="employee"
+   template_name="emp_list.html"
+
+
+class SingleView(DetailView):
+   model=Employee
+   context_object_name="employee"
+   template_name="emp_details.html"
+
+class DelEmp(DeleteView):
+   model=Employee
+   context_object_name="emp"
+   template_name="delete_emp.html"
+   success_url=reverse_lazy("emp_list")
+   
+class CreateEmp(CreateView):
+   model=Employee
+   form_class=EmpForm
+   template_name="emp_reg.html"
+   success_url=reverse_lazy("emp_list")
+
+
+class UpdateEmp(UpdateView):
+   model:Employee
+   form_class=EmpForm
+   template_name="emp_reg.html"
+   success_url=reverse_lazy("emp_list")
+
+
+
+def emp_pages(req):
+
+   all_data=Employee.objects.all().values()
+   item_count=req.GET.get("items")
+   print(item_count)
+   
+   paginator=Paginator(all_data,item_count)   #Data,Items per page
+   #Page number
+   page_number=req.GET.get("page",1)  #  req of wanted page ...getting the current page from req
+   # print(page_number)
+   page_obj=paginator.get_page(page_number)  #to cheeck whether page exists if exists get page number from data
+   print(page_obj)
+    
+   search=req.GET.get("prop")
+   print(search)
+   if search:
+      all_data=all_data.filter(city__icontains=search)
+
+   res_data={
+      "current_page":page_obj.number,#indicates current page
+      "page_size":paginator.per_page,  #records per page
+      "total_pages":paginator.num_pages,  #  per page 5 total no of pages 
+       "total_items":paginator.count,     #total no of items
+       "has_next":page_obj.has_next(),
+       "has_previous":page_obj.has_previous(),
+       "next_page":page_obj.next_page_number() if page_obj.has_next() else None,
+       "previous_page":page_obj.previous_page_number() if page_obj.has_previous() else None,
+       "result":list(page_obj)
+
+   }
+   return JsonResponse({"data":res_data }) 

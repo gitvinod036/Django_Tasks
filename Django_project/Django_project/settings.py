@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 # import Django_project.wsgi
 from pathlib import Path
+import os
 import environ
+# BASE_DIR=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +24,7 @@ environ.Env.read_env()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the secret key used in production secret!  'django-insecure-&kvlv)8m=p=qc+82l^kvd-89uz(z=8_2wrdliq%-q&c(j#uybu'
 SECRET_KEY = 'django-insecure-&kvlv)8m=p=qc+82l^kvd-89uz(z=8_2wrdliq%-q&c(j#uybu'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -41,18 +43,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Django_app',
+    'corsheaders',
     'cloudinary'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'Django.app.middleware.SampleMiddleware'
+    # 'Django_app.middleware.SampleMiddleware',
+    # 'Django_app.middleware.LastMiddleware'
     
 ]
 
@@ -61,7 +66,7 @@ ROOT_URLCONF = 'Django_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'Templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,6 +101,7 @@ DATABASES = {
     }
 }
 
+CORS_ALLOW_CREDENTIALS = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -155,3 +161,9 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER="vinodpersonal080@gmail.com"
 EMAIL_HOST_PASSWORD="nnlj ovkv razr gele"
 DEFAULT_FROM_EMAIL=EMAIL_HOST_USER
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",     # React frontend (for example)
+    "http://example.com",        # Another allowed domain
+]

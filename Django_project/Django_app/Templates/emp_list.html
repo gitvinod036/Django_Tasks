@@ -1,0 +1,28 @@
+{% extends './sample.html' %}
+
+{% block content %}
+
+<h1>Employees</h1>
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Department</th>
+        <th>salary</th>
+        <th>city</th>
+    </tr>
+   {% for emp in employee %}
+   <tr>
+    <td>{{emp.name}}</td>
+    <td>{{emp.department}}</td>
+    <td>{{emp.salary}}</td>
+    <td>{{emp.city}}</td>
+    <td>
+        <a href="{% url 'emp_details' emp.pk %}">View</a>
+        <a href="{%url 'update_emp' emp.pk'}">Edit</a>
+        <a href="{% url 'delete_emp' emp.pk %}">Delete</a>
+    </td>
+   </tr>
+   {% endfor %}
+</table>
+
+{%endblock%} 
